@@ -1,0 +1,1 @@
+Create a function to get all objects on a frame with their colors and centers.
