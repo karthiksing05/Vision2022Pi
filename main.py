@@ -6,7 +6,7 @@ from transfer import Transfer
 from params import PORT
 
 vid = cv2.VideoCapture(0)
-transferObj = Transfer(PORT)
+# transferObj = Transfer(PORT)
 
 if __name__ == '__main__':
     while True:
@@ -19,7 +19,7 @@ if __name__ == '__main__':
             num_items_each=-1
         )
 
-        transferObj.send(data)
+        # transferObj.send(data)
 
         cv2.imshow('colorDetection', formattedFrame)
 

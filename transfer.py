@@ -1,6 +1,6 @@
 """
 STILL BROKEN; TRANSFER NOT READY YET...
-need to fix the other side (java on roborio) to take any param and typecast
+need to fix the other side (java on roborio) to take the dataList
 """
 
 import usb.core
