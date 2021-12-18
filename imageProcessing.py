@@ -199,16 +199,16 @@ def get_objects(frame, color:str='all', num_items_each:int=-1):
         formattedFrame = np.hstack([finalImg, finalOutput])
 
         data = []
-        coords_items = coords.items()
+        coords_items = list(all_coords.items())
         idx = 0
         for key, val in centers:
             entry = {}
             entry["objNumber"] = idx
             entry["center"] = key
-            entry["width"] = coords_items[idx][3]
-            entry["height"] = coords_items[idx][4]
-            entry["x"] = coords_items[idx][1]
-            entry["y"] = coords_items[idx][2]
+            entry["width"] = coords_items[idx][0][3]
+            entry["height"] = coords_items[idx][0][2]
+            entry["x"] = coords_items[idx][0][0]
+            entry["y"] = coords_items[idx][0][1]
             entry["color"] = val
             data.append(entry)
             idx += 1
