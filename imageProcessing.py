@@ -51,7 +51,22 @@ def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
 
     formattedFrame = np.hstack([final_img, boxes_img])
 
-    return formattedFrame, coords, boxes_img, centers
+    data = []
+    coords_items = list(coords.items())
+    idx = 0
+    for key, val in centers:
+        entry = {}
+        entry["objNumber"] = idx
+        entry["center"] = key
+        entry["width"] = coords_items[idx][0][3]
+        entry["height"] = coords_items[idx][0][2]
+        entry["x"] = coords_items[idx][0][0]
+        entry["y"] = coords_items[idx][0][1]
+        entry["color"] = val
+        data.append(entry)
+        idx += 1
+
+    return formattedFrame, data, coords, boxes_img, centers
 
 def _get_red(frame, num_items:int=3):
     """
@@ -104,7 +119,22 @@ def _get_red(frame, num_items:int=3):
 
     formattedFrame = np.hstack([final_img, boxes_img])
 
-    return formattedFrame, coords, boxes_img, centers
+    data = []
+    coords_items = list(coords.items())
+    idx = 0
+    for key, val in centers:
+        entry = {}
+        entry["objNumber"] = idx
+        entry["center"] = key
+        entry["width"] = coords_items[idx][0][3]
+        entry["height"] = coords_items[idx][0][2]
+        entry["x"] = coords_items[idx][0][0]
+        entry["y"] = coords_items[idx][0][1]
+        entry["color"] = val
+        data.append(entry)
+        idx += 1
+
+    return formattedFrame, data, coords, boxes_img, centers
 
 def _get_centers(coords:dict, frame):
     """
