@@ -205,13 +205,13 @@ def get_objects(frame, color:str='all', num_items_each:int=-1):
 
             if elem == 'blue':
                 outline = (255, 0, 0)
-                _, coords, output, centers = _get_color(BLUE_BOUNDS, frame, elem, num_items_each)
+                _, data, coords, output, centers = _get_color(BLUE_BOUNDS, frame, elem, num_items_each)
             elif elem == 'red':
                 outline = (0, 0, 255)
-                _, coords, output, centers = _get_red(frame, num_items_each)
+                _, data, coords, output, centers = _get_red(frame, num_items_each)
             elif elem == 'black':
                 outline = (0, 0, 0)
-                _, coords, output, centers = _get_color(BLACK_BOUNDS, frame, elem, num_items_each)
+                _, data, coords, output, centers = _get_color(BLACK_BOUNDS, frame, elem, num_items_each)
 
             outputs.append(output)
             all_coords.extend(list(coords.items()))

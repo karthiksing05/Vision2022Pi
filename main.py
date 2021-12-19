@@ -19,7 +19,8 @@ if __name__ == '__main__':
             num_items_each=-1
         )
 
-        # transferObj.send(data)
+        # for entry in data:
+        #     transferObj.send(entry)
 
         cv2.imshow('colorDetection', formattedFrame)
 
