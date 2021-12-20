@@ -21,8 +21,8 @@ class Transfer(object):
             output = os.popen("lsusb -D /dev/bus/usb/001/005").read() # find the port that RoboRio is connected to
             # in most cases, the port will be the one above.
 
-            idVendor = hex(int(output.split("idVendor")[1][:17].strip()), base=16)
-            idProduct = hex(int(output.split("idProduct")[1][:17].strip()), base=16)
+            idVendor = hex(int(output.split("idVendor")[1][:17].strip(), base=16))
+            idProduct = hex(int(output.split("idProduct")[1][:17].strip(), base=16))
 
             self.dev = usb.core.find(idVendor=idVendor, idProduct=idProduct)
 
