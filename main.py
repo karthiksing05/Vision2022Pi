@@ -3,10 +3,10 @@ import cv2
 from imageProcessing import get_objects
 from transfer import Transfer
 
-from params import PORT
-
 vid = cv2.VideoCapture(0)
-# transferObj = Transfer(PORT)
+transferObj = Transfer()
+
+print(transferObj.get_dev())
 
 if __name__ == '__main__':
     while True:
@@ -19,8 +19,8 @@ if __name__ == '__main__':
             num_items_each=-1
         )
 
-        # for entry in data:
-        #     transferObj.send(entry)
+        for entry in data:
+            transferObj.send(entry)
 
         cv2.imshow('colorDetection', formattedFrame)
 
