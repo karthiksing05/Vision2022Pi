@@ -18,7 +18,7 @@ class Transfer(object):
     def get_dev(self):
 
         try:
-            output = os.system("lsusb -D /dev/bus/usb/001/005") # find the port that RoboRio is connected to
+            output = os.popen("lsusb -D /dev/bus/usb/001/005").read() # find the port that RoboRio is connected to
             # in most cases, the port will be the one above.
 
             idVendor = hex(int(output.split("idVendor")[1][:17].strip()), base=16)
