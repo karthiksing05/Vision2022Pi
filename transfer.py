@@ -13,7 +13,7 @@ class Transfer(object):
     def __init__(self, port=None):
         self.port = port
         if not port:
-            self.dev = usb.core.find(idVendor=0xfffe, idProduct=0x0001)
+            self.dev = usb.core.find(idVendor=0x0424, idProduct=0xec00)
 
     def get_dev(self):
 
