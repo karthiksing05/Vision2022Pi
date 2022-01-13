@@ -4,7 +4,7 @@ from imageProcessing import get_colored_objects
 from transfer import Transfer
 from params import SEND_MODE
 
-vid = cv2.VideoCapture(1)
+vid = cv2.VideoCapture(0)
 
 if SEND_MODE == 'usb':
     transferObj = Transfer()
