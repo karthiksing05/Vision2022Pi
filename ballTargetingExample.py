@@ -4,7 +4,7 @@ from imageProcessing import get_colored_objects
 from transfer import Transfer
 from params import SEND_MODE
 
-vid = cv2.VideoCapture(0)
+vid = cv2.VideoCapture(1)
 
 if SEND_MODE == 'usb':
     transferObj = Transfer()
@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
         formattedFrame, data, coords, output, centers = get_colored_objects(
             frame, 
-            color=['blue', 'red'],
+            color=['red'],
             num_items_each=-1
         )
 

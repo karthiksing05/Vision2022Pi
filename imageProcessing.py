@@ -3,6 +3,8 @@ import cv2
 
 from params import *
 
+VERSION = cv2.__version__
+
 # These functions are for ball and color tracking
 def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
     """
@@ -31,7 +33,10 @@ def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
     mask = cv2.inRange(image, lower, upper)
     output = cv2.bitwise_and(image, image, mask=mask)
 
-    _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if VERSION[0] == '3':
+        _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    else:
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     cont_sorted = list(sorted(contours, key=cv2.contourArea, reverse=True)[:num_items])
 
@@ -100,7 +105,10 @@ def _get_red(frame, num_items:int=3):
 
     output = cv2.bitwise_and(image, image, mask=mask)
 
-    _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if VERSION[0] == '3':
+        _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    else:
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     cont_sorted = list(sorted(contours, key=cv2.contourArea, reverse=True))
     cont_sorted = cont_sorted[:num_items]
@@ -201,7 +209,6 @@ def get_colored_objects(frame, color='all', num_items_each:int=-1):
         if color == 'all':
             colorList = ['blue', 'red', 'black']
         else:
-            print(color)
             colorList = color
 
         outputs = []
@@ -229,6 +236,8 @@ def get_colored_objects(frame, color='all', num_items_each:int=-1):
             finalOutput = (outputs[0] | outputs[1] | outputs[2])
         elif len(colorList) == 2:
             finalOutput = (outputs[0] | outputs[1])
+        elif len(colorList) == 1:
+            finalOutput = outputs[0]
 
         all_coords = dict(all_coords)
 
@@ -288,7 +297,10 @@ def get_goal_data(frame) -> dict:
     mask = cv2.inRange(hsv, lower, upper)
     output = cv2.bitwise_and(frame, frame, mask=mask)
 
-    contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if VERSION[0] == '3':
+        _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    else:
+        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     cont_sorted = list(sorted(contours, key=cv2.contourArea, reverse=True))
 
