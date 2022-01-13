@@ -3,6 +3,7 @@ import cv2
 
 from params import *
 
+# These functions are for ball and color tracking
 def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
     """
     Given a set of bounds and the frame/picture, this function will detect a
@@ -54,7 +55,7 @@ def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
     data = []
     coords_items = list(coords.items())
     idx = 0
-    for key, val in centers:
+    for key, val in centers.items():
         entry = {}
         entry["objNumber"] = idx
         entry["center"] = key
@@ -122,7 +123,7 @@ def _get_red(frame, num_items:int=3):
     data = []
     coords_items = list(coords.items())
     idx = 0
-    for key, val in centers:
+    for key, val in centers.items():
         entry = {}
         entry["objNumber"] = idx
         entry["center"] = key
@@ -156,7 +157,7 @@ def _get_centers(coords:dict, frame):
 
     return newFrame, centers
 
-def get_objects(frame, color:str='all', num_items_each:int=-1):
+def get_colored_objects(frame, color='all', num_items_each:int=-1):
     """
     This function's role is to return a frame with the objects of a given color
     outlined, as well as a list of coordinates of the pixels where the objects 
@@ -165,6 +166,8 @@ def get_objects(frame, color:str='all', num_items_each:int=-1):
     Params:
     - color:str --> the color of the object(s) you want to detect
         currently supported are: 'blue', 'red', 'black', 'all'
+        Color can also be a list of specific colors you want to detect, i.e.
+        only blue and black, or red and blue, etc.
     - frame ------> the frame you want to analyze
     - num_items_each:int --> the number of objects you want to detect per color
         if necessary, you can also specify a negative one here to get the
@@ -195,7 +198,10 @@ def get_objects(frame, color:str='all', num_items_each:int=-1):
     else:
 
         finalImg = frame
-        colorList = ['blue', 'red', 'black']
+        if color == 'all':
+            colorList = ['blue', 'red', 'black']
+        else:
+            colorList = color
 
         outputs = []
 
@@ -231,7 +237,7 @@ def get_objects(frame, color:str='all', num_items_each:int=-1):
         data = []
         coords_items = list(all_coords.items())
         idx = 0
-        for key, val in centers:
+        for key, val in centers.items():
             entry = {}
             entry["objNumber"] = idx
             entry["center"] = key
@@ -244,3 +250,76 @@ def get_objects(frame, color:str='all', num_items_each:int=-1):
             idx += 1
 
         return formattedFrame, data, coords, finalOutput, centers
+
+# These functions are for shooting the ball at the correct arc
+def get_goal_data(frame) -> dict:
+    """
+    This function uses a limelight OpenCV Clone to get the distance of an 
+    object from the camera.
+
+    The function returns a data entry to be sent by the transfer class.
+
+    Params:
+    - frame:Any -> the frame you would like to parse for distance.
+
+    Returns:
+    - data:dict -> a collection of entries that each contain a series of data points
+    """
+
+    data = []
+    """
+    data entry -> dictionary
+    {
+        distance: float,
+        center: tuple(int, int),
+        x_offset: float,
+        y_offset: float
+    }
+    """
+
+    lower = np.array(GREEN_BOUNDS[0], dtype="uint8")
+    upper = np.array(GREEN_BOUNDS[1], dtype="uint8")
+
+    # get the mask for green colored things
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, lower, upper)
+    output = cv2.bitwise_and(frame, frame, mask=mask)
+
+    contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    cont_sorted = list(sorted(contours, key=cv2.contourArea, reverse=True))
+
+    coords = []
+    for item in cont_sorted:
+        x, y, w, h = cv2.boundingRect(item)
+        big_enough = (w > SMALLEST_WIDTH) and (h > SMALLEST_HEIGHT)
+        small_enough = True
+        if big_enough and small_enough:
+            coords.append((x, y, w, h))
+            cv2.rectangle(output, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
+            cv2.rectangle(frame, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
+    
+    coords = sorted(coords, key=lambda x: x[0])
+    pixel_width = coords[-1][0] - coords[0][0]
+    coords = sorted(coords, key=lambda x: x[1])
+    pixel_height = coords[-1][1] - coords[0][1]
+    tgtCenter = ((pixel_width / 2), (pixel_height / 2))
+
+    real_width = REAL_DIMS[0]
+
+    distance = real_width * PI_CAMERA_FOCAL_LENGTH / pixel_width
+
+    frameCenterCoords = (frame.shape[1], frame.shape[0])
+
+    pixelOffset = ((frameCenterCoords[0] - pixel_width), (frameCenterCoords - pixel_height))
+
+    entry = {
+        'distance': distance,
+        'center': tgtCenter,
+        'x_offset':pixelOffset[0],
+        'y_offset':pixelOffset[1]
+    }
+
+    data.append(entry)
+
+    return data
