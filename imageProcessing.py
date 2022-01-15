@@ -45,7 +45,7 @@ def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
     coords = {}
     for item in cont_sorted:
         x, y, w, h = cv2.boundingRect(item)
-        big_enough = (w > SMALLEST_WIDTH) and (h > SMALLEST_HEIGHT)
+        big_enough = (w > SMALLEST_BALL_WIDTH) and (h > SMALLEST_BALL_HEIGHT)
         small_enough = True
         if big_enough and small_enough:
             coords[(x, y, w, h)] = color_str
@@ -118,7 +118,7 @@ def _get_red(frame, num_items:int=3):
     coords = {}
     for item in cont_sorted:
         x, y, w, h = cv2.boundingRect(item)
-        if (w > SMALLEST_WIDTH) and (h > SMALLEST_HEIGHT):
+        if (w > SMALLEST_BALL_WIDTH) and (h > SMALLEST_BALL_HEIGHT):
             coords[(x, y, w, h)] = 'red'
             cv2.rectangle(boxes_img, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
             cv2.rectangle(final_img, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
@@ -302,39 +302,42 @@ def get_goal_data(frame) -> dict:
     else:
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    cont_sorted = list(sorted(contours, key=cv2.contourArea, reverse=True))
+    try:
+        cont_sorted = list(sorted(contours, key=cv2.contourArea, reverse=True)[0])
+        
+        coords = []
+        for item in cont_sorted:
+            x, y, w, h = cv2.boundingRect(item)
+            big_enough = (w > SMALLEST_GOAL_WIDTH) and (h > SMALLEST_GOAL_HEIGHT)
+            small_enough = True
+            if big_enough and small_enough:
+                coords.append((x, y, w, h))
+                cv2.rectangle(output, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
+                cv2.rectangle(frame, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
+        
+        coords = sorted(coords, key=lambda x: x[0])
+        pixel_width = coords[-1][0] - coords[0][0]
+        coords = sorted(coords, key=lambda x: x[1])
+        pixel_height = coords[-1][1] - coords[0][1]
+        tgtCenter = ((pixel_width / 2), (pixel_height / 2))
 
-    coords = []
-    for item in cont_sorted:
-        x, y, w, h = cv2.boundingRect(item)
-        big_enough = (w > SMALLEST_WIDTH) and (h > SMALLEST_HEIGHT)
-        small_enough = True
-        if big_enough and small_enough:
-            coords.append((x, y, w, h))
-            cv2.rectangle(output, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
-            cv2.rectangle(frame, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
-    
-    coords = sorted(coords, key=lambda x: x[0])
-    pixel_width = coords[-1][0] - coords[0][0]
-    coords = sorted(coords, key=lambda x: x[1])
-    pixel_height = coords[-1][1] - coords[0][1]
-    tgtCenter = ((pixel_width / 2), (pixel_height / 2))
+        real_width = REAL_DIMS[0]
 
-    real_width = REAL_DIMS[0]
+        distance = real_width * CAMERA_FOCAL_LENGTH / pixel_width
 
-    distance = real_width * PI_CAMERA_FOCAL_LENGTH / pixel_width
+        frameCenterCoords = (frame.shape[1], frame.shape[0])
 
-    frameCenterCoords = (frame.shape[1], frame.shape[0])
+        pixelOffset = ((frameCenterCoords[0] - pixel_width), (frameCenterCoords[1] - pixel_height))
 
-    pixelOffset = ((frameCenterCoords[0] - pixel_width), (frameCenterCoords - pixel_height))
+        entry = {
+            'distance': distance,
+            'center': tgtCenter,
+            'x_offset':pixelOffset[0],
+            'y_offset':pixelOffset[1]
+        }
 
-    entry = {
-        'distance': distance,
-        'center': tgtCenter,
-        'x_offset':pixelOffset[0],
-        'y_offset':pixelOffset[1]
-    }
+        data.append(entry)
 
-    data.append(entry)
-
-    return data
+        return frame, data
+    except:
+        return frame, [{}]

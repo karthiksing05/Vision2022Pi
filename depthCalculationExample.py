@@ -1,10 +1,12 @@
 import cv2
 
-from imageProcessing import get_goal_data
+from stereoVision import StereoVision
 from transfer import Transfer
 from params import SEND_MODE
 
-vid = cv2.VideoCapture(0)
+lVid = cv2.VideoCapture(0)
+rVid = cv2.VideoCapture(1)
+sv = StereoVision()
 
 if SEND_MODE == 'usb':
     transferObj = Transfer()
@@ -13,8 +15,9 @@ if SEND_MODE == 'usb':
 if __name__ == '__main__':
     while True:
 
-        ret, frame = vid.read()
-        formattedFrame, data = get_goal_data(frame)
+        ret, lFrame = lVid.read()
+        ret, rFrame = rVid.read()
+        formattedFrame, data = StereoVision.create_disparity(lFrame, rFrame)
 
         if SEND_MODE == 'print':
             print(data)
@@ -27,6 +30,7 @@ if __name__ == '__main__':
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    vid.release()
+    lVid.release()
+    rVid.release()
 
     cv2.destroyAllWindows()
