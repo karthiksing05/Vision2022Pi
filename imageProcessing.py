@@ -1,9 +1,21 @@
+import math
 import numpy as np
 import cv2
 
 from params import *
 
 VERSION = cv2.__version__
+
+def _is_circle(con):
+    perimeter = cv2.arcLength(con, True)
+    area = cv2.contourArea(con)
+    if perimeter == 0:
+        return False, 0
+    circularity = 4 * math.pi * area / (perimeter * perimeter)
+    if 0.65 < circularity < 1.2:
+        return True, circularity
+    print(circularity)
+    return False, 0
 
 # These functions are for ball and color tracking
 def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
@@ -16,7 +28,6 @@ def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
     NOTE: This is a helper function to be used in the main function (might not
     work in a raw instance, better to call the main function in this file)
     """
-
 
     if type(frame) == str:
         frame = cv2.imread(frame)
@@ -44,84 +55,16 @@ def _get_color(bounds:tuple, frame, color_str:str, num_items:int=3):
     final_img = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
     coords = {}
     for item in cont_sorted:
-        x, y, w, h = cv2.boundingRect(item)
-        big_enough = (w > SMALLEST_BALL_WIDTH) and (h > SMALLEST_BALL_HEIGHT)
-        small_enough = True
-        if big_enough and small_enough:
-            coords[(x, y, w, h)] = color_str
-            cv2.rectangle(boxes_img, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
-            cv2.rectangle(final_img, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
-
-    final_img, centers = _get_centers(coords, final_img)
-    boxes_img, centers = _get_centers(coords, boxes_img)
-
-    formattedFrame = np.hstack([final_img, boxes_img])
-
-    data = []
-    coords_items = list(coords.items())
-    idx = 0
-    for key, val in centers.items():
-        entry = {}
-        entry["objNumber"] = idx
-        entry["center"] = key
-        entry["width"] = coords_items[idx][0][3]
-        entry["height"] = coords_items[idx][0][2]
-        entry["x"] = coords_items[idx][0][0]
-        entry["y"] = coords_items[idx][0][1]
-        entry["color"] = val
-        data.append(entry)
-        idx += 1
-
-    return formattedFrame, data, coords, boxes_img, centers
-
-def _get_red(frame, num_items:int=3):
-    """
-    Because red is a bit special in that it is shown in both the top and 
-    bottom of the hue spectrum, it is important to provide two bound
-    settings and merge the masks in order to get the best possible object
-    detection.
-    """
-
-    if type(frame) == str:
-        frame = cv2.imread(frame)
-
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-    image = frame
-
-    red1Lower, red1Upper = RED_LOWER_BOUNDS
-    red2Lower, red2Upper = RED_UPPER_BOUNDS
-
-    red1Lower = np.array(red1Lower, dtype="uint8")
-    red1Upper = np.array(red1Upper, dtype="uint8")
-
-    red2Lower = np.array(red2Lower, dtype="uint8")
-    red2Upper = np.array(red2Upper, dtype="uint8")
-
-    mask1 = cv2.inRange(image, red1Lower, red1Upper)
-    mask2 = cv2.inRange(image, red2Lower, red2Upper)
-
-    mask = mask1 | mask2
-
-    output = cv2.bitwise_and(image, image, mask=mask)
-
-    if VERSION[0] == '3':
-        _, contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    else:
-        contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    cont_sorted = list(sorted(contours, key=cv2.contourArea, reverse=True))
-    cont_sorted = cont_sorted[:num_items]
-
-    boxes_img = output
-    final_img = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
-    coords = {}
-    for item in cont_sorted:
-        x, y, w, h = cv2.boundingRect(item)
-        if (w > SMALLEST_BALL_WIDTH) and (h > SMALLEST_BALL_HEIGHT):
-            coords[(x, y, w, h)] = 'red'
-            cv2.rectangle(boxes_img, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
-            cv2.rectangle(final_img, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
+        is_circle, circularity = _is_circle(item)
+        if is_circle:
+            print(circularity)
+            x, y, w, h = cv2.boundingRect(item)
+            big_enough = (w > SMALLEST_BALL_WIDTH) and (h > SMALLEST_BALL_HEIGHT)
+            small_enough = True
+            if big_enough and small_enough:
+                coords[(x, y, w, h)] = color_str
+                cv2.rectangle(boxes_img, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
+                cv2.rectangle(final_img, (x, y),(x+w, y+h), BOUNDARY_COLOR, 2)
 
     final_img, centers = _get_centers(coords, final_img)
     boxes_img, centers = _get_centers(coords, boxes_img)
@@ -198,7 +141,7 @@ def get_colored_objects(frame, color='all', num_items_each:int=-1):
         return _get_color(BLUE_BOUNDS, frame, 'blue', num_items_each)
 
     elif color == 'red':
-        return _get_red(frame, num_items_each)
+        return _get_color(RED_BOUNDS, frame, 'red', num_items_each)
 
     elif color == 'black':
         return _get_color(BLACK_BOUNDS, frame, 'black', num_items_each)
@@ -222,7 +165,7 @@ def get_colored_objects(frame, color='all', num_items_each:int=-1):
                 _, data, coords, output, centers = _get_color(BLUE_BOUNDS, frame, elem, num_items_each)
             elif elem == 'red':
                 outline = (0, 0, 255)
-                _, data, coords, output, centers = _get_red(frame, num_items_each)
+                _, data, coords, output, centers = _get_color(RED_BOUNDS, frame, 'red', num_items_each)
             elif elem == 'black':
                 outline = (0, 0, 0)
                 _, data, coords, output, centers = _get_color(BLACK_BOUNDS, frame, elem, num_items_each)
