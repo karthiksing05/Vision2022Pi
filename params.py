@@ -1,23 +1,20 @@
 SMALLEST_BALL_WIDTH = 30
 SMALLEST_BALL_HEIGHT = 30
 
-SMALLEST_GOAL_WIDTH = 40
-SMALLEST_GOAL_HEIGHT = 40
-
 LARGEST_WIDTH = 180 # Not implemented yet
 LARGEST_HEIGHT = 180 # Not implemented yet
 
 BLUE_BOUNDS = ([90, 0, 45], [130, 255, 255])
 BLACK_BOUNDS = ([0, 0, 0], [179, 255, 40])
-GREEN_BOUNDS = ([75, 20, 20], [90, 255, 255]) # TODO figure out best bounds for this
 RED_BOUNDS = ([0, 120, 60], [15, 255, 255])
 
 BOUNDARY_COLOR = (255, 255, 255)
 CROSSHAIR_COLOR = (255, 255, 255)
 
-CAMERA_FOCAL_LENGTH = 10 # mm # maximum of 20 mm but minimum of 10 mm
-REAL_DIMS = (120, 120, 91.875) # cm
-
-FLANN_INDEX_KDTREE = 1
+GREEN_BOUNDS = ([62, 210, 210], [94, 255, 255])
+DIST_BTW_CAMS = 13.97 # Distance between the cameras [cm]
+FOCAL_LENGTH = 10 # Camera lens' focal length [mm]
+FOV = 48.455490620795 # Camera field of view in the horizontal plane [degrees]
+MIN_CONT_AREA = 30
 
 SEND_MODE = 'print'
