@@ -55,9 +55,9 @@ def find_centers(frame, mask):
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 255), 2)
         cv2.drawMarker(frame, center, (0, 0, 0), cv2.MARKER_CROSS, 5, 2)
 
-        offsets = () # x offset and y offset
+        offset = (frameCenter[0] - center[0], frameCenter[1] - center[1]) # x offset and y offset (in pixels)
 
-        return center
+        return center, offset
 
     return (0, 0)
 

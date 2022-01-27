@@ -42,8 +42,10 @@ while True:
         frame_left, mask_left = add_HSV_filter(frame_left, 0)
 
         # APPLYING find_centers RECOGNITION:
-        centers_right, offsets = find_centers(frame_right, mask_right)
-        centers_left, offsets  = find_centers(frame_left, mask_left)
+        centers_right, offsetR = find_centers(frame_right, mask_right)
+        centers_left, offsetL  = find_centers(frame_left, mask_left)
+
+        offset = (((offsetL[0] + offsetR[0]) / 2), ((offsetL[1] + offsetR[1]) / 2))
 
         ################## CALCULATING BALL DEPTH #########################################################
         # """
@@ -53,14 +55,17 @@ while True:
 
         else:
             depth = tri(centers_right, centers_left, frame_right, frame_left, DIST_BTW_CAMS, FOCAL_LENGTH, FOV)
-            # Multiply computer value with 205.8 to get real-life depth in [cm]. The factor was found manually.
+            depth = round(depth, 3)
+            # Multiply computer value with a value to get real-life depth in [cm]. The factor was found manually.
             cv2.putText(frame_right, "TRACKING", (75, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0),2)
             cv2.putText(frame_left, "TRACKING", (75, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0),2)
-            cv2.putText(frame_right, "Distance: " + str(round(depth,3)), (200,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (124,252,0),2)
-            cv2.putText(frame_left, "Distance: " + str(round(depth,3)), (200,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (124,252,0),2)
+            cv2.putText(frame_right, "Distance: " + str(depth), (200,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (124,252,0),2)
+            cv2.putText(frame_left, "Distance: " + str(depth), (200,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (124,252,0),2)
             
             entry = {
-                "depth":depth
+                "depth":depth,
+                "x-offset":offset[0],
+                "y-offset":offset[1]
             }
 
             if SEND_MODE == 'print':
