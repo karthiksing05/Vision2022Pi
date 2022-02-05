@@ -27,15 +27,9 @@ if __name__ == '__main__':
         ret_right, frame_right = cap_right.getFrame()
         ret_left, frame_left = cap_left.getFrame()
 
-        scale_percent = 50 # percent of original size
-
-        reWidthL = int(frame_left.shape[1] * scale_percent / 100)
-        reHeightL = int(frame_left.shape[0] * scale_percent / 100)
-        frame_left = cv2.resize(frame_left, (reWidthL, reHeightL))
-
-        reWidthR = int(frame_right.shape[1] * scale_percent / 100)
-        reHeightR = int(frame_right.shape[0] * scale_percent / 100)
-        frame_right = cv2.resize(frame_right, (reWidthR, reHeightR))
+        # If cannot catch any frame, break
+        if ret_right == False or ret_left == False:                    
+            continue
 
         ################## CALIBRATION #########################################################
 
@@ -43,11 +37,18 @@ if __name__ == '__main__':
 
         ########################################################################################
 
-        # If cannot catch any frame, break
-        if ret_right == False or ret_left == False:                    
-            continue
-
         else:
+
+            scale_percent = 50 # percent of original size
+
+            reWidthL = int(frame_left.shape[1] * scale_percent / 100)
+            reHeightL = int(frame_left.shape[0] * scale_percent / 100)
+            frame_left = cv2.resize(frame_left, (reWidthL, reHeightL))
+
+            reWidthR = int(frame_right.shape[1] * scale_percent / 100)
+            reHeightR = int(frame_right.shape[0] * scale_percent / 100)
+            frame_right = cv2.resize(frame_right, (reWidthR, reHeightR))
+
             # APPLYING add_HSV_filter-FILTER:
             frame_right, mask_right = add_HSV_filter(frame_right, 1)
             frame_left, mask_left = add_HSV_filter(frame_left, 0)
