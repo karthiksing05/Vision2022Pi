@@ -14,8 +14,11 @@ from params import *
 from transfer import Transfer
 
 # Open both cameras
-cap_right = Camera(1)
-cap_left =  Camera(0)
+cap_right = cv2.VideoCapture(2)
+cap_left =  cv2.VideoCapture(0)
+
+cap_right.set(cv2.CAP_PROP_BUFFERSIZE, BUFFER_SIZE)
+cap_left.set(cv2.CAP_PROP_BUFFERSIZE, BUFFER_SIZE)
 
 if SEND_MODE == 'usb':
     transferObj = Transfer()
@@ -24,8 +27,8 @@ if SEND_MODE == 'usb':
 if __name__ == '__main__':
     while True:
 
-        ret_right, frame_right = cap_right.getFrame()
-        ret_left, frame_left = cap_left.getFrame()
+        ret_right, frame_right = cap_right.read()
+        ret_left, frame_left = cap_left.read()
 
         # If cannot catch any frame, break
         if ret_right == False or ret_left == False:                    

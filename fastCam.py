@@ -20,7 +20,7 @@ class Camera(object):
             with self.lock:
                 self.last_ready = self.capture.grab()
 
-    def getFrame(self):
+    def read(self):
         if (self.last_ready is not None):
             self.last_ready,self.last_frame=self.capture.retrieve()
             return True, self.last_frame.copy()

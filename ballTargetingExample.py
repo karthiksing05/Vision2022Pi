@@ -14,7 +14,7 @@ if SEND_MODE == 'usb':
 if __name__ == '__main__':
     while True:
 
-        ret, frame = vid.getFrame()
+        ret, frame = vid.read()
 
         if not ret:
             continue
