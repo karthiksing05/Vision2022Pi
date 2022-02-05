@@ -3,9 +3,11 @@ from fastCam import Camera
 
 from imageProcessing import get_colored_objects
 from transfer import Transfer
-from params import SEND_MODE
+from params import SEND_MODE, BUFFER_SIZE
 
-vid = Camera(0)
+vid = cv2.VideoCapture(0)
+
+vid.set(cv2.CAP_PROP_BUFFERSIZE, BUFFER_SIZE)
 
 if SEND_MODE == 'usb':
     transferObj = Transfer()
