@@ -1,7 +1,6 @@
 import sys
 import cv2
 import numpy as np
-from fastCam import Camera
 
 # Functions for stereo vision
 from stereoVisionUtils import add_HSV_filter as add_HSV_filter

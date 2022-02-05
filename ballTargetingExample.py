@@ -1,5 +1,4 @@
 import cv2
-from fastCam import Camera
 
 from imageProcessing import get_colored_objects
 from transfer import Transfer
