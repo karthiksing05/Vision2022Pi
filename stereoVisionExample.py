@@ -1,8 +1,7 @@
 import sys
 import cv2
 import numpy as np
-import platform
-from matplotlib import pyplot as plt
+from fastCam import Camera
 
 # Functions for stereo vision
 from stereoVisionUtils import add_HSV_filter as add_HSV_filter
@@ -15,8 +14,8 @@ from params import *
 from transfer import Transfer
 
 # Open both cameras
-cap_right = cv2.VideoCapture(2)
-cap_left =  cv2.VideoCapture(1)
+cap_right = Camera(1)
+cap_left =  Camera(0)
 
 if SEND_MODE == 'usb':
     transferObj = Transfer()
@@ -25,8 +24,18 @@ if SEND_MODE == 'usb':
 if __name__ == '__main__':
     while True:
 
-        ret_right, frame_right = cap_right.read()
-        ret_left, frame_left = cap_left.read()
+        ret_right, frame_right = cap_right.getFrame()
+        ret_left, frame_left = cap_left.getFrame()
+
+        scale_percent = 50 # percent of original size
+
+        reWidthL = int(frame_left.shape[1] * scale_percent / 100)
+        reHeightL = int(frame_left.shape[0] * scale_percent / 100)
+        frame_left = cv2.resize(frame_left, (reWidthL, reHeightL))
+
+        reWidthR = int(frame_right.shape[1] * scale_percent / 100)
+        reHeightR = int(frame_right.shape[0] * scale_percent / 100)
+        frame_right = cv2.resize(frame_right, (reWidthR, reHeightR))
 
         ################## CALIBRATION #########################################################
 
@@ -35,8 +44,8 @@ if __name__ == '__main__':
         ########################################################################################
 
         # If cannot catch any frame, break
-        if ret_right==False or ret_left==False:                    
-            break
+        if ret_right == False or ret_left == False:                    
+            continue
 
         else:
             # APPLYING add_HSV_filter-FILTER:
@@ -59,10 +68,10 @@ if __name__ == '__main__':
                 depth = tri(centers_right, centers_left, frame_right, frame_left, DIST_BTW_CAMS, FOCAL_LENGTH, FOV)
                 depth = round(depth, 3)
                 # Multiply computer value with a value to get real-life depth in [cm]. The factor was found manually.
-                cv2.putText(frame_right, "TRACKING", (75, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0),2)
-                cv2.putText(frame_left, "TRACKING", (75, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0),2)
-                cv2.putText(frame_right, "Distance: " + str(depth), (200,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (124,252,0),2)
-                cv2.putText(frame_left, "Distance: " + str(depth), (200,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (124,252,0),2)
+                # cv2.putText(frame_right, "TRACKING", (75, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0),2)
+                # cv2.putText(frame_left, "TRACKING", (75, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0),2)
+                # cv2.putText(frame_right, "Distance: " + str(depth), (200,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (124,252,0),2)
+                # cv2.putText(frame_left, "Distance: " + str(depth), (200,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (124,252,0),2)
                 
                 entry = {
                     "depth":depth,
@@ -71,7 +80,7 @@ if __name__ == '__main__':
                 }
 
                 if SEND_MODE == 'print':
-                    print("Depth: ", depth)
+                    print("Data: ", entry)
                 elif SEND_MODE == 'usb':
                     transferObj.send(entry)
             # """
@@ -86,9 +95,9 @@ if __name__ == '__main__':
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
+        del frame_left
+        del frame_right
+
 
     # Release and destroy all windows before termination
-    cap_right.release()
-    cap_left.release()
-
     cv2.destroyAllWindows()

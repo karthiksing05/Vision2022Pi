@@ -1,10 +1,11 @@
 import cv2
+from fastCam import Camera
 
 from imageProcessing import get_colored_objects
 from transfer import Transfer
 from params import SEND_MODE
 
-vid = cv2.VideoCapture(1)
+vid = Camera(0)
 
 if SEND_MODE == 'usb':
     transferObj = Transfer()
@@ -13,7 +14,17 @@ if SEND_MODE == 'usb':
 if __name__ == '__main__':
     while True:
 
-        ret, frame = vid.read()
+        ret, frame = vid.getFrame()
+
+        if not ret:
+            continue
+
+        scale_percent = 50
+
+        width = int(frame.shape[1] * scale_percent / 100)
+        height = int(frame.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        frame = cv2.resize(frame, dim, interpolation = cv2.INTER_AREA)
 
         formattedFrame, data, coords, output, centers = get_colored_objects(
             frame, 
@@ -32,6 +43,6 @@ if __name__ == '__main__':
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    vid.release()
+        del frame
 
     cv2.destroyAllWindows()

@@ -5,6 +5,8 @@ import imutils
 
 from params import *
 
+# ML imports for depth staggering
+
 def add_HSV_filter(frame, camera):
 
 	# Blurring the frame
@@ -59,7 +61,7 @@ def find_centers(frame, mask):
 
         return center, offset
 
-    return (0, 0)
+    return ((0, 0), (0, 0))
 
 def calibrate(frameR, frameL):
 
@@ -92,8 +94,8 @@ def calibrate(frameR, frameL):
 def find_depth(circle_right, circle_left, frame_right, frame_left, baseline,f, alpha):
 
     # CONVERT FOCAL LENGTH f FROM [mm] TO [pixel]:
-    height_right, width_right, depth_right = frame_right.shape
-    height_left, width_left, depth_left = frame_left.shape
+    _, width_right, _ = frame_right.shape
+    _, width_left, _ = frame_left.shape
 
     if width_right == width_left:
         f_pixel = (width_right * 0.5) / np.tan(alpha * 0.5 * np.pi/180)
@@ -109,5 +111,18 @@ def find_depth(circle_right, circle_left, frame_right, frame_left, baseline,f, a
 
     # CALCULATE DEPTH z:
     zDepth = (baseline*f_pixel)/disparity             #Depth in [cm]
+    depth = abs(zDepth)
 
-    return abs(zDepth)
+    """
+    As of now, the up-close distance estimation is valid and precise, however as
+    the object of interest gets farther away, the distance estimation is less 
+    effective.
+
+    Therefore, we are going to use a basic logarithm to find good coefficients for depth 
+    staggering, so we get more accurate depths when farther away.
+    """
+
+    if depth > 150:
+        depth = 1/4 * np.log(depth)
+
+    return depth
