@@ -17,7 +17,7 @@ FOCAL_LENGTH = 10 # Camera lens' focal length [mm]
 FOV = 48.455490620795 # Camera field of view in the horizontal plane [degrees]
 MIN_CONT_AREA = 30
 
-BUFFER_SIZE = 3
+BUFFER_SIZE = 1
 
 SRC_LEFT = 0
 SRC_RIGHT = 2

@@ -9,17 +9,15 @@ from stereoVisionUtils import find_depth as tri
 from stereoVisionUtils import calibrate
 
 # Multithreading class!!!
-from threadUtils import VideoGet, CountsPerSec
+from threadUtils import ThreadedCamera
 
 # My imports for constant parameters and the Transfer USB class
 from params import *
 from transfer import Transfer
 
 # Open both cameras
-cap_right = VideoGet(SRC_RIGHT).start() # cv2.VideoCapture(2)
-cap_left =  VideoGet(SRC_LEFT).start() # cv2.VideoCapture(0)
-
-cps = CountsPerSec().start()
+cap_right = ThreadedCamera(SRC_RIGHT) # cv2.VideoCapture(2)
+cap_left =  ThreadedCamera(SRC_LEFT) # cv2.VideoCapture(0)
 
 # cap_right.set(cv2.CAP_PROP_BUFFERSIZE, BUFFER_SIZE)
 # cap_left.set(cv2.CAP_PROP_BUFFERSIZE, BUFFER_SIZE)
@@ -31,11 +29,14 @@ if SEND_MODE == 'usb':
 if __name__ == '__main__':
     while True:
 
-        frame_right = cap_right.frame
-        frame_left = cap_left.frame
+        cap_left.update()
+        cap_right.update()
+
+        frame_right = cap_right.grab_frame()
+        frame_left = cap_left.grab_frame()
 
         # If cannot catch any frame, break
-        if cap_right.grabbed == False or cap_left.grabbed == False:                    
+        if not frame_right.any() or not frame_left.any():
             continue
 
         ################## CALIBRATION #########################################################
@@ -43,8 +44,6 @@ if __name__ == '__main__':
         # frame_right, frame_left = calibrate(frame_right, frame_left)
 
         ########################################################################################
-
-        cps.increment()
 
         scale_percent = 50 # percent of original size
 
@@ -101,8 +100,6 @@ if __name__ == '__main__':
 
         # Hit "q" to close the window
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            cap_left.stop()
-            cap_right.stop()
             break
 
         del frame_left
