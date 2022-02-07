@@ -101,6 +101,8 @@ if __name__ == '__main__':
 
         # Hit "q" to close the window
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            cap_left.stop()
+            cap_right.stop()
             break
 
         del frame_left
