@@ -19,4 +19,7 @@ MIN_CONT_AREA = 30
 
 BUFFER_SIZE = 3
 
+SRC_LEFT = 0
+SRC_RIGHT = 2
+
 SEND_MODE = 'print'
